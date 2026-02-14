@@ -1,0 +1,7 @@
+{
+  "name": "SportsCenter Manager",
+  "description": "Integral management software for sports center construction and operations. Offline-first, mobile-ready.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

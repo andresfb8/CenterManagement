@@ -36,6 +36,14 @@ export interface Attachment {
   type: 'image' | 'document';
 }
 
+export interface HistoryEntry {
+  id: string;
+  taskId: string;
+  description: string;
+  timestamp: number;
+  // Optional: userId if we had authentication
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -82,4 +90,5 @@ export interface AppState {
   subProjects: SubProject[];
   currentProject: Project;
   searchQuery: string;
+  history: HistoryEntry[];
 }

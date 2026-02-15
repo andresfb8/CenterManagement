@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../App';
-import { Printer, TrendingUp, DollarSign, AlertTriangle, Layers, ArrowRight } from 'lucide-react';
+import { Printer, TrendingUp, DollarSign, AlertTriangle, Layers, ArrowRight, Briefcase } from 'lucide-react';
 
 export const FinanceView = () => {
     const context = useContext(AppContext);
@@ -29,6 +29,21 @@ export const FinanceView = () => {
             taskCount: phaseTasks.length
         };
     }).filter(p => p.budget > 0 || p.cost > 0); // Only show active phases financially
+
+    // --- Vendor Calculations ---
+    const vendorMetrics = state.vendors.map(v => {
+        const vendorTasks = state.tasks.filter(t => t.vendorId === v.id);
+        const budget = vendorTasks.reduce((acc, t) => acc + (t.budgetEstimated || 0), 0);
+        const cost = vendorTasks.reduce((acc, t) => acc + (t.costReal || 0), 0);
+        return {
+            ...v,
+            budget,
+            cost,
+            variance: cost - budget,
+            percentUsed: budget > 0 ? (cost / budget) * 100 : 0,
+            taskCount: vendorTasks.length
+        };
+    }).filter(v => v.budget > 0 || v.cost > 0).sort((a, b) => b.cost - a.cost);
 
     // --- Task List Sort ---
     // Sort by variance descending (biggest problems first)
@@ -136,6 +151,60 @@ export const FinanceView = () => {
                             </div>
                          );
                     })}
+                </div>
+            </div>
+
+            {/* Vendor Breakdown Section */}
+            <div className="mb-8">
+                <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    <Briefcase size={18} /> Gastos por Proveedor
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:grid-cols-3">
+                    {vendorMetrics.map(vendor => {
+                        const isOverBudget = vendor.cost > vendor.budget;
+                        return (
+                            <div key={vendor.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h4 className="font-bold text-gray-800">{vendor.name}</h4>
+                                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{vendor.type}</span>
+                                    </div>
+                                    <div className={`text-xs font-bold px-2 py-1 rounded ${isOverBudget ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                                        {isOverBudget ? 'Desvío' : 'OK'}
+                                    </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="mb-4">
+                                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                        <span>Ejecutado: {vendor.percentUsed.toFixed(0)}%</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                        <div 
+                                            className={`h-full rounded-full ${isOverBudget ? 'bg-red-500' : 'bg-blue-500'}`} 
+                                            style={{ width: `${Math.min(vendor.percentUsed, 100)}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 text-sm border-t border-gray-100 pt-3">
+                                    <div>
+                                        <span className="block text-[10px] text-gray-400 uppercase">Presupuesto</span>
+                                        <span className="font-mono text-gray-600">${vendor.budget.toLocaleString()}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block text-[10px] text-gray-400 uppercase">Coste Real</span>
+                                        <span className={`font-mono font-bold ${isOverBudget ? 'text-red-600' : 'text-blue-600'}`}>${vendor.cost.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {vendorMetrics.length === 0 && (
+                        <div className="col-span-full text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+                            No hay gastos asignados a proveedores externos aún.
+                        </div>
+                    )}
                 </div>
             </div>
 

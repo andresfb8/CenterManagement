@@ -15,7 +15,7 @@ import {
   Briefcase,
   Layers
 } from 'lucide-react';
-import { Task, Vendor, Project, AppState, TaskStatus, TeamMember, SubProject } from './types';
+import { Task, Vendor, Project, AppState, TaskStatus, TeamMember, SubProject, HistoryEntry } from './types';
 import { INITIAL_TASKS, INITIAL_VENDORS, INITIAL_PROJECT, INITIAL_TEAM_MEMBERS, INITIAL_SUBPROJECTS } from './constants';
 import { KanbanBoard } from './components/KanbanBoard';
 import { Dashboard } from './components/Dashboard';
@@ -47,6 +47,7 @@ interface AppContextType {
   setActiveTab: (tab: string) => void;
   isMobile: boolean;
   openTaskModal: (task?: Task | null) => void;
+  addHistoryEntry: (taskId: string, description: string) => void;
 }
 
 export const AppContext = React.createContext<AppContextType | null>(null);
@@ -66,6 +67,11 @@ export default function App() {
   const [subProjects, setSubProjects] = useState<SubProject[]>(() => {
     const saved = localStorage.getItem('scm_subprojects');
     return saved ? JSON.parse(saved) : INITIAL_SUBPROJECTS;
+  });
+
+  const [history, setHistory] = useState<HistoryEntry[]>(() => {
+    const saved = localStorage.getItem('scm_history');
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [vendors] = useState<Vendor[]>(INITIAL_VENDORS);
@@ -93,13 +99,51 @@ export default function App() {
   }, [subProjects]);
 
   useEffect(() => {
+    localStorage.setItem('scm_history', JSON.stringify(history));
+  }, [history]);
+
+  useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // --- Helper: Add History ---
+  const addHistoryEntry = (taskId: string, description: string) => {
+    const newEntry: HistoryEntry = {
+        id: `hist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        taskId,
+        description,
+        timestamp: Date.now()
+    };
+    setHistory(prev => [newEntry, ...prev]);
+  };
+
   // --- Actions ---
   const updateTask = (updatedTask: Task) => {
+    // Detect changes for history log
+    const oldTask = tasks.find(t => t.id === updatedTask.id);
+    if (oldTask) {
+        if (oldTask.status !== updatedTask.status) {
+            const statusMap: Record<string, string> = { todo: 'Pendiente', doing: 'En Curso', done: 'Hecho' };
+            addHistoryEntry(updatedTask.id, `Estado cambiado a: ${statusMap[updatedTask.status]}`);
+        }
+        if (oldTask.priority !== updatedTask.priority) {
+            const prioMap: Record<string, string> = { low: 'Baja', medium: 'Media', high: 'Alta' };
+            addHistoryEntry(updatedTask.id, `Prioridad cambiada a: ${prioMap[updatedTask.priority]}`);
+        }
+        if (oldTask.assigneeId !== updatedTask.assigneeId) {
+            const member = teamMembers.find(m => m.id === updatedTask.assigneeId);
+            addHistoryEntry(updatedTask.id, `Reasignado a: ${member ? member.name : 'Sin Asignar'}`);
+        }
+        if (oldTask.costReal !== updatedTask.costReal) {
+             addHistoryEntry(updatedTask.id, `Coste actualizado: $${updatedTask.costReal.toLocaleString()}`);
+        }
+        if (oldTask.budgetEstimated !== updatedTask.budgetEstimated) {
+             addHistoryEntry(updatedTask.id, `Presupuesto modificado: $${updatedTask.budgetEstimated.toLocaleString()}`);
+        }
+    }
+
     setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
     
     if (updatedTask.status === 'done' && updatedTask.recurrence) {
@@ -120,10 +164,12 @@ export default function App() {
 
   const addTask = (newTask: Task) => {
     setTasks(prev => [newTask, ...prev]);
+    addHistoryEntry(newTask.id, "Tarea creada");
   };
 
   const deleteTask = (taskId: string) => {
     setTasks(prev => prev.filter(t => t.id !== taskId));
+    // Optionally delete history, but keeping it might be better for audit.
   };
 
   // Team Logic
@@ -167,7 +213,7 @@ export default function App() {
   };
 
   const contextValue: AppContextType = {
-    state: { tasks, vendors, teamMembers, subProjects, currentProject: project, searchQuery },
+    state: { tasks, vendors, teamMembers, subProjects, currentProject: project, searchQuery, history },
     updateTask,
     addTask,
     deleteTask,
@@ -181,7 +227,8 @@ export default function App() {
     activeTab,
     setActiveTab,
     isMobile,
-    openTaskModal
+    openTaskModal,
+    addHistoryEntry
   };
 
   // --- Render ---

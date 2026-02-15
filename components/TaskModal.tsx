@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
 import { Task, ChecklistItem } from '../types';
-import { X, Check, Trash2, Camera, Link, DollarSign, Clock, AlertCircle, TrendingUp, FileText, PieChart, Search, Info, Users, HardHat, Layers } from 'lucide-react';
+import { X, Check, Trash2, Camera, Link, DollarSign, Clock, AlertCircle, TrendingUp, FileText, PieChart, Search, Info, Users, HardHat, Layers, AlertTriangle, History } from 'lucide-react';
 
 interface TaskModalProps {
   task: Task | null;
@@ -87,11 +87,15 @@ export const TaskModal = ({ task, isOpen, onClose }: TaskModalProps) => {
     .filter(t => t.id !== editedTask.id)
     .filter(t => t.title.toLowerCase().includes(dependencySearch.toLowerCase()));
 
+  // Filter history for this task
+  const taskHistory = state.history.filter(h => h.taskId === task.id).sort((a, b) => b.timestamp - a.timestamp);
+
   const tabs = [
       { id: 'detalles', label: 'Detalles' },
       { id: 'checklist', label: 'Checklist' },
       { id: 'fotos', label: 'Fotos' },
-      { id: 'finanzas', label: 'Finanzas' }
+      { id: 'finanzas', label: 'Finanzas' },
+      { id: 'historial', label: 'Historial' }
   ];
 
   return (
@@ -128,12 +132,12 @@ export const TaskModal = ({ task, isOpen, onClose }: TaskModalProps) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 px-6">
+        <div className="flex border-b border-gray-200 px-6 overflow-x-auto no-scrollbar">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-sm font-medium capitalize border-b-2 transition-colors ${activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+              className={`px-4 py-3 text-sm font-medium capitalize border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
             >
               {tab.label}
             </button>
@@ -212,13 +216,32 @@ export const TaskModal = ({ task, isOpen, onClose }: TaskModalProps) => {
                 </div>
                 
                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Vencimiento</label>
+                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                      <Clock size={16} className="text-gray-500" />
+                      Fecha Vencimiento
+                   </label>
                    <input 
                       type="date" 
                       className="w-full border border-gray-300 rounded-lg p-2 text-sm"
                       value={new Date(editedTask.dueDate).toISOString().split('T')[0]}
                       onChange={(e) => setEditedTask({...editedTask, dueDate: new Date(e.target.value).getTime()})}
                    />
+                </div>
+
+                <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                       <AlertTriangle size={16} className={editedTask.priority === 'high' ? 'text-red-500' : editedTask.priority === 'medium' ? 'text-orange-500' : 'text-blue-500'} />
+                       Prioridad
+                   </label>
+                   <select 
+                     className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                     value={editedTask.priority}
+                     onChange={e => setEditedTask({...editedTask, priority: e.target.value as 'low' | 'medium' | 'high'})}
+                   >
+                     <option value="low">Baja</option>
+                     <option value="medium">Media</option>
+                     <option value="high">Alta</option>
+                   </select>
                 </div>
               </div>
 
@@ -459,6 +482,38 @@ export const TaskModal = ({ task, isOpen, onClose }: TaskModalProps) => {
                   </div>
                </div>
 
+            </div>
+          )}
+
+          {/* --- Tab: History --- */}
+          {activeTab === 'historial' && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-sm font-bold text-gray-500 uppercase mb-4 flex items-center gap-2">
+                    <History size={16} /> Registro de Actividad
+                </h3>
+                {taskHistory.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400 text-sm italic">
+                        No hay movimientos registrados aún.
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {taskHistory.map(entry => (
+                            <div key={entry.id} className="flex gap-4 items-start relative">
+                                {/* Timeline Line */}
+                                <div className="absolute left-[5.5rem] top-0 bottom-0 w-px bg-gray-200 -z-10 last:hidden"></div>
+                                
+                                <div className="w-20 text-right flex-shrink-0">
+                                    <div className="text-xs font-bold text-gray-700">{new Date(entry.timestamp).toLocaleDateString()}</div>
+                                    <div className="text-[10px] text-gray-400">{new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                                </div>
+                                <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm mt-1 flex-shrink-0"></div>
+                                <div className="flex-1 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm text-gray-700">
+                                    {entry.description}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
           )}
 

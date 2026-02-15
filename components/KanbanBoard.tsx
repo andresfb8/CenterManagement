@@ -235,6 +235,19 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const totalChecks = task.checklist.length;
   const assignee = teamMembers.find(m => m.id === task.assigneeId);
 
+  const priorityBadge = () => {
+    switch(task.priority) {
+      case 'high':
+        return <span className="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">Alta</span>;
+      case 'medium':
+        return <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">Media</span>;
+      case 'low':
+        return <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">Baja</span>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div 
       draggable 
@@ -247,11 +260,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
     >
       <div className="flex justify-between items-start mb-2">
          <div className="flex flex-col items-start gap-1 max-w-[70%]">
-             <div className="flex items-center gap-1">
+             <div className="flex items-center gap-1 flex-wrap">
                 <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${task.type === 'construction' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
                     {task.type === 'construction' ? 'Obra' : 'Mantenimiento'}
                 </span>
-                {task.priority === 'high' && <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded">!!!</span>}
+                {priorityBadge()}
              </div>
              {subProjectName ? (
                  <span className="text-[10px] text-gray-400 font-medium truncate w-full" title={subProjectName}>{subProjectName}</span>

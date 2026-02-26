@@ -52,7 +52,7 @@ export interface Task {
   subProjectId: string; // Changed from phaseId to link to SubProject
   type: TaskType;
   priority: 'low' | 'medium' | 'high';
-  
+
   // Logic
   blockedBy: string[]; // IDs of tasks that block this one
   recurrence?: {
@@ -72,8 +72,9 @@ export interface Task {
   checklist: ChecklistItem[];
   photos: string[]; // Base64 or URLs
   attachments: Attachment[];
-  
+
   createdAt: number;
+  startDate?: number; // Optional on created but should be populated
   dueDate: number;
 }
 

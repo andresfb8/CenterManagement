@@ -47,6 +47,7 @@ export const INITIAL_TASKS: Task[] = [
     photos: [],
     attachments: [],
     createdAt: NOW - (10 * DAY),
+    startDate: NOW - (10 * DAY),
     dueDate: NOW - (2 * DAY),
   },
   {
@@ -66,6 +67,7 @@ export const INITIAL_TASKS: Task[] = [
     photos: [],
     attachments: [],
     createdAt: NOW - (1 * DAY),
+    startDate: NOW - (1 * DAY),
     dueDate: NOW + (4 * DAY),
   },
   {
@@ -85,6 +87,7 @@ export const INITIAL_TASKS: Task[] = [
     photos: [],
     attachments: [],
     createdAt: NOW + (5 * DAY),
+    startDate: NOW + (5 * DAY),
     dueDate: NOW + (10 * DAY),
   },
   {
@@ -105,6 +108,7 @@ export const INITIAL_TASKS: Task[] = [
     photos: [],
     attachments: [],
     createdAt: NOW,
+    startDate: NOW,
     dueDate: NOW + DAY,
   },
   {
@@ -123,6 +127,7 @@ export const INITIAL_TASKS: Task[] = [
     photos: [],
     attachments: [],
     createdAt: NOW + (12 * DAY),
+    startDate: NOW + (12 * DAY),
     dueDate: NOW + (20 * DAY),
   }
 ];

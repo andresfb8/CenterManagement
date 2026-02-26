@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { AppContext } from '../App';
+import { AppContext } from '../contexts/AppContext';
 import { Users, Trash2, Plus, UserPlus, Pencil } from 'lucide-react';
 import { TeamMember } from '../types';
 
@@ -10,7 +10,7 @@ export const TeamView = () => {
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    
+
     // Form State
     const [name, setName] = useState('');
     const [role, setRole] = useState('');
@@ -34,14 +34,14 @@ export const TeamView = () => {
 
     const handleSave = () => {
         if (!name || !role) return;
-        
+
         if (editingId) {
             // Update
             const updatedMember: TeamMember = {
                 id: editingId,
                 name,
                 role,
-                initials: initials || name.substring(0,2).toUpperCase()
+                initials: initials || name.substring(0, 2).toUpperCase()
             };
             updateTeamMember(updatedMember);
         } else {
@@ -50,7 +50,7 @@ export const TeamView = () => {
                 id: `tm_${Date.now()}`,
                 name,
                 role,
-                initials: initials || name.substring(0,2).toUpperCase()
+                initials: initials || name.substring(0, 2).toUpperCase()
             };
             addTeamMember(member);
         }
@@ -69,7 +69,7 @@ export const TeamView = () => {
                     <h2 className="text-2xl font-bold text-gray-800">Equipo y Personal</h2>
                     <p className="text-gray-500">Gestiona quién tiene acceso y asignaciones en el proyecto.</p>
                 </div>
-                <button 
+                <button
                     onClick={openCreate}
                     className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
                 >
@@ -84,8 +84,8 @@ export const TeamView = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label className="block text-xs font-medium text-gray-500 mb-1">Nombre Completo</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 className="w-full border border-gray-300 rounded-lg p-2 text-sm"
                                 value={name}
                                 onChange={e => setName(e.target.value)}
@@ -93,8 +93,8 @@ export const TeamView = () => {
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-gray-500 mb-1">Rol (Cargo)</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 className="w-full border border-gray-300 rounded-lg p-2 text-sm"
                                 value={role}
                                 onChange={e => setRole(e.target.value)}
@@ -102,8 +102,8 @@ export const TeamView = () => {
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-gray-500 mb-1">Iniciales</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 className="w-full border border-gray-300 rounded-lg p-2 text-sm"
                                 maxLength={2}
                                 value={initials}
@@ -149,14 +149,14 @@ export const TeamView = () => {
                                         {taskCount} tareas
                                     </td>
                                     <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                        <button 
+                                        <button
                                             onClick={() => openEdit(member)}
                                             className="text-gray-400 hover:text-blue-500 p-2 rounded-full hover:bg-blue-50 transition"
                                             title="Editar"
                                         >
                                             <Pencil size={16} />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => deleteTeamMember(member.id)}
                                             className="text-gray-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition"
                                             title="Eliminar"

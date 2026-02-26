@@ -1,6 +1,6 @@
 import React, { useContext, useRef } from 'react';
 import { Plus, Camera } from 'lucide-react';
-import { AppContext } from '../App';
+import { AppContext } from '../contexts/AppContext';
 import { Task } from '../types';
 
 export const QuickCapture = () => {
@@ -13,7 +13,7 @@ export const QuickCapture = () => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             const reader = new FileReader();
-            
+
             reader.onloadend = () => {
                 if (typeof reader.result === 'string') {
                     // Pre-fill task with photo but let user edit
@@ -68,24 +68,24 @@ export const QuickCapture = () => {
     return (
         <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-40">
             {/* Hidden Input for Camera */}
-            <input 
-                type="file" 
-                accept="image/*" 
+            <input
+                type="file"
+                accept="image/*"
                 capture="environment"
-                className="hidden" 
+                className="hidden"
                 ref={fileInputRef}
                 onChange={handleFileChange}
             />
 
-            <button 
+            <button
                 onClick={() => fileInputRef.current?.click()}
                 className="bg-white text-slate-700 p-3 rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition"
                 title="Foto Rápida"
             >
                 <Camera size={24} />
             </button>
-            
-            <button 
+
+            <button
                 onClick={handleManualCreate}
                 className="bg-blue-600 text-white p-4 rounded-full shadow-xl hover:bg-blue-700 transition transform hover:scale-105"
                 title="Crear Tarea"
